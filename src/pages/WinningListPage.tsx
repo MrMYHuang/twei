@@ -187,7 +187,7 @@ class _WinningListPage extends React.Component<PageProps, State> {
                 <div className='row'>
                   <div className='cell1'>六獎</div>
                   <div className='cell2'>
-                    <span className='uiFontX0_7'>末3碼與增開交獎相同者各得獎金2百元</span>
+                    <span className='uiFontX0_7'>末3碼與頭獎相同者各得獎金2百元</span>
                   </div>
                 </div>
 
@@ -202,7 +202,7 @@ class _WinningListPage extends React.Component<PageProps, State> {
                         <span className='uiFontX1_5 cellSpan'>{v}</span>
                       )
                     }
-                    <span className='uiFontX0_7'>末3碼與頭獎相同者各得獎金2百元</span>
+                    <span className='uiFontX0_7'>末3碼與增開六獎相同者各得獎金2百元</span>
                   </div>
                 </div>
 
