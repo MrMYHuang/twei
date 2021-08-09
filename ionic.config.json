@@ -1,0 +1,7 @@
+{
+  "name": "twei",
+  "integrations": {
+    "capacitor": {}
+  },
+  "type": "react"
+}

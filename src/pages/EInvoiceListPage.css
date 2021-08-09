@@ -1,0 +1,15 @@
+.listItem {
+    flex-direction: column;
+}
+
+.LoginBlock {
+    margin: 40px;
+}
+
+.IonInput {
+    border: 2px solid var(--ion-color-primary);
+}
+
+input::placeholder {
+    color: gray;
+}

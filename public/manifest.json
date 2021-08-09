@@ -1,0 +1,29 @@
+{
+  "short_name": "台灣發票",
+  "name": "台灣發票",
+  "icons": [
+    {
+      "src": "assets/icon/icon.png",
+      "type": "image/png",
+      "sizes": "1024x1024"
+    },
+    {
+      "src": "assets/icon/icon.png",
+      "type": "image/png",
+      "sizes": "1024x1024",
+      "purpose": "maskable"
+    }
+  ],
+  "scope": "/twei/",
+  "start_url": "/twei/",
+  "shortcuts": [
+    {
+      "name": "開獎號碼",
+      "url": "/twei/WinningList",
+      "icons": [{ "src": "assets/icon/icon.png", "sizes": "1024x1024" }]
+    }
+  ],
+  "display": "standalone",
+  "theme_color": "black",
+  "background_color": "black"
+}

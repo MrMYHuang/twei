@@ -1,0 +1,28 @@
+.table {
+    display: table;
+    border-collapse: collapse;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.row {
+    display: table-row;
+}
+
+.cell1 {
+    display: table-cell;
+    font-size: var(--ui-font-size);
+    color: var(--ion-color-primary-contrast);
+    background-color: var(--ion-color-primary);
+    border: 1px solid;
+}
+
+
+.cell2 {
+    display: table-cell;
+    border: 1px solid;
+}
+
+.cellSpan {
+    display: block;
+}
