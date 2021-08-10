@@ -37,3 +37,48 @@ const sample = {
 export type CarrierInvChkDetail = typeof sample.details[0];
 export type CarrierInvChkDetails = typeof sample.details;
 export type CarrierInvChk = typeof sample;
+
+export enum WinningStatus {
+    Super,
+    Special,
+    First,
+    Second,
+    Third,
+    Forth,
+    Fifth,
+    Sixth,
+    SixthEx,
+    NoAward,
+    NotYet,
+}
+
+export interface CarrierInvChkDetailExt extends CarrierInvChkDetail {
+    winningStatus: WinningStatus;
+}
+
+export function winningStatusToString(status: WinningStatus) {
+    switch (status) {
+        case WinningStatus.Super:
+            return '1,000萬';
+        case WinningStatus.Special:
+            return '200萬';
+        case WinningStatus.First:
+            return '20萬';
+        case WinningStatus.Second:
+            return '4萬';
+        case WinningStatus.Third:
+            return '1萬';
+        case WinningStatus.Forth:
+            return '4千';
+        case WinningStatus.Fifth:
+            return '1千';
+        case WinningStatus.Sixth:
+            return '2百';
+        case WinningStatus.SixthEx:
+            return '2百';
+        case WinningStatus.NoAward:
+            return '未中獎';
+        default:
+            return '未開獎';
+    }
+}

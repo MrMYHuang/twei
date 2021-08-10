@@ -6,7 +6,7 @@ import { Settings } from '../models/Settings';
 import { TmpSettings } from '../models/TmpSettings';
 import './EInvoiceListPage.css';
 import Apis from '../Apis';
-import { CarrierInvChkDetail, CarrierInvChkDetails } from '../models/CarrierInvChk';
+import { CarrierInvChkDetailExt, WinningStatus, winningStatusToString } from '../models/CarrierInvChk';
 import Globals from '../Globals';
 
 interface Props {
@@ -21,7 +21,7 @@ interface PageProps extends Props, RouteComponentProps<{
 }> { }
 
 interface State {
-  dataParts: CarrierInvChkDetails;
+  dataParts: CarrierInvChkDetailExt[];
   dateSel: string,
   popover: any;
   isScrollOn: boolean;
@@ -103,15 +103,19 @@ class _EInvoiceListPage extends React.Component<PageProps, State> {
 
     try {
       const res = await Apis.carrierInvChk(this.props.settings.cardNo, this.props.settings.cardEncrypt, this.state.dateSel);
+      let details = res.details as CarrierInvChkDetailExt[];
+      details.forEach((v, i) => {
+        details[i].winningStatus = this.calculateInvoiceWinningStatus(v.invNum);
+      })
       this.props.dispatch({
         type: "TMP_SET_KEY_VAL",
-        key: 'carrierInvChk',
-        val: res,
+        key: 'carrierInvChkDetailsExt',
+        val: details.sort((a, b) => a.winningStatus - b.winningStatus),
       });
     } catch (error) {
       this.props.dispatch({
         type: "TMP_SET_KEY_VAL",
-        key: 'carrierInvChk',
+        key: 'carrierInvChkDetailsExt',
         val: undefined,
       });
     }
@@ -134,7 +138,7 @@ class _EInvoiceListPage extends React.Component<PageProps, State> {
 
     //console.log(`Loading page ${this.page}`);
 
-    const data = this.props.tmpSettings.carrierInvChk?.details || [];
+    const data = this.props.tmpSettings.carrierInvChkDetailsExt;
     const dataParts = data.slice(this.page * this.rows, (this.page + 1) * this.rows);
 
     this.page += 1;
@@ -147,7 +151,12 @@ class _EInvoiceListPage extends React.Component<PageProps, State> {
   }
 
   calculateInvoiceWinningStatus(invNum: string) {
-    const winningList = this.props.tmpSettings.qryWinningList!;
+    invNum = invNum.substring(2);
+    const winningList = this.props.tmpSettings.qryWinningList;
+    if (winningList == null) {
+      return WinningStatus.NotYet;
+    }
+
     const firstPrizeNos = [
       winningList.firstPrizeNo1, winningList.firstPrizeNo2, winningList.firstPrizeNo3,
       winningList.firstPrizeNo4, winningList.firstPrizeNo5, winningList.firstPrizeNo6,
@@ -159,65 +168,58 @@ class _EInvoiceListPage extends React.Component<PageProps, State> {
       winningList.sixthPrizeNo4, winningList.sixthPrizeNo5, winningList.sixthPrizeNo6,
     ];
     if (invNum === winningList.superPrizeNo) {
-      return '1,000萬';
+      return WinningStatus.Super;
     } else if ([winningList.spcPrizeNo, winningList.spcPrizeNo2, winningList.spcPrizeNo3].some(no => invNum === no)) {
-      return '200萬';
+      return WinningStatus.Special;
     } else if (firstPrizeNos.some(no => invNum === no)) {
-      return '20萬';
+      return WinningStatus.First;
     } else if (firstPrizeNos.some(no => invNum.substring(1) === no.substring(1))) {
-      return '4萬';
+      return WinningStatus.Second;
     } else if (firstPrizeNos.some(no => invNum.substring(2) === no.substring(2))) {
-      return '1萬';
+      return WinningStatus.Third;
     } else if (firstPrizeNos.some(no => invNum.substring(3) === no.substring(3))) {
-      return '4千';
+      return WinningStatus.Forth;
     } else if (firstPrizeNos.some(no => invNum.substring(4) === no.substring(4))) {
-      return '1千';
+      return WinningStatus.Fifth;
     } else if (firstPrizeNos.some(no => invNum.substring(5) === no.substring(5))) {
-      return '2百';
+      return WinningStatus.Sixth;
     } else if (sixthPrizeNos.some(no => invNum.substring(5) === no)) {
-      return '2百';
+      return WinningStatus.SixthEx;
     } else {
-      return '未中獎';
+      return WinningStatus.NoAward;
     }
   }
 
-  selectedMapUrl = '';
   getRows() {
     let rows = Array<object>();
-    this.state.dataParts.forEach((item: CarrierInvChkDetail, index: number) => {
-      let invWinningStatus = '';
-      if (this.props.tmpSettings.qryWinningList == null) {
-        invWinningStatus = '未開獎';
-      } else {
-        invWinningStatus = this.calculateInvoiceWinningStatus(item.invNum.substring(2))
-      }
-      rows.push(
-        <IonItem button={true} key={`item` + item.invNum}
-          onClick={async event => {
-            const invDate = `${item.invDate.year + 1911}-${item.invDate.month.toString().padStart(2, '0')}-${item.invDate.date.toString().padStart(2, '0')}`;
-            this.props.history.push(`${Globals.pwaUrl}/eInvoice/${item.invNum}/${invDate}`);
-          }}>
-          <div tabIndex={0}></div>{/* Workaround for macOS Safari 14 bug. */}
-          <div className='listItem'>
-            <div>
-              <IonLabel className='ion-text-wrap uiFont' key={`invDateLabel_` + index}>
-                {invWinningStatus}
-              </IonLabel>
-            </div>
-
-            <div>
-              <IonLabel className='ion-text-wrap uiFont' key={`invDateLabel_` + index}>
-                {item.invDate.year + 1911}/{item.invDate.month.toString().padStart(2, '0')}/{item.invDate.date.toString().padStart(2, '0')} &nbsp; {item.invNum}
-              </IonLabel>
-            </div>
-            <div>
-              <IonLabel className='ion-text-wrap uiFont' key={`bookmarkItemLabel_` + index}>
-                {item.sellerName}
-              </IonLabel>
-            </div>
+    this.state.dataParts.forEach((item: CarrierInvChkDetailExt, index: number) => {
+      const row = <IonItem button={true} key={`item` + item.invNum}
+        onClick={async event => {
+          const invDate = `${item.invDate.year + 1911}-${item.invDate.month.toString().padStart(2, '0')}-${item.invDate.date.toString().padStart(2, '0')}`;
+          this.props.history.push(`${Globals.pwaUrl}/eInvoice/${item.invNum}/${invDate}`);
+        }}>
+        <div tabIndex={0}></div>{/* Workaround for macOS Safari 14 bug. */}
+        <div className='winningStatus'>
+          <IonLabel className='ion-text-wrap uiFont' key={`winLabel_` + index}>
+            {winningStatusToString(item.winningStatus)}
+          </IonLabel>
+        </div>
+        <div className='listItem'>
+          <div>
+            <IonLabel className='ion-text-wrap uiFont' key={`invDataLabel_` + index}>
+              {item.invDate.month.toString().padStart(2, '0')}/{item.invDate.date.toString().padStart(2, '0')} &nbsp;
+              {item.invNum} &nbsp;
+              {item.amount}元
+            </IonLabel>
           </div>
-        </IonItem>
-      );
+          <div>
+            <IonLabel className='ion-text-wrap uiFont' key={`sellerLabel_` + index}>
+              {item.sellerName}
+            </IonLabel>
+          </div>
+        </div>
+      </IonItem>;
+      rows.push(row);
     });
     return rows;
   }
@@ -237,7 +239,7 @@ class _EInvoiceListPage extends React.Component<PageProps, State> {
               onIonChange={async e => {
                 this.setState({ dateSel: e.detail.value || '' });
                 await this.fetchDataAndShow();
-              }}>
+              }} >
             </IonDatetime>
           </IonToolbar>
         </IonHeader>
@@ -279,12 +281,13 @@ class _EInvoiceListPage extends React.Component<PageProps, State> {
                       onIonInfinite={(ev: CustomEvent<void>) => {
                         this.showDataPageByPage();
                         (ev.target as HTMLIonInfiniteScrollElement).complete();
-                      }}>
+                      }} >
                       <IonInfiniteScrollContent
                         loadingText="載入中...">
                       </IonInfiniteScrollContent>
                     </IonInfiniteScroll>
                   </IonList>
+                  <IonLabel>中獎資訊僅供參考。若有錯誤恕不負責。</IonLabel>
                 </>
           }
 
@@ -303,6 +306,7 @@ class _EInvoiceListPage extends React.Component<PageProps, State> {
                   });
                 },
               },
+
               {
                 text: '登入',
                 cssClass: 'primary uiFont',
@@ -363,7 +367,7 @@ const mapStateToProps = (state: any /*, ownProps*/) => {
   }
 };
 
-//const mapDispatchToProps = {};
+// const mapDispatchToProps = {};
 
 export default connect(
   mapStateToProps,

@@ -86,7 +86,7 @@ class _DetailPage extends React.Component<PageProps, State> {
           </IonHeader>
           <IonContent style={{ textAlign: 'center' }}>
 
-            <div className='ion-text-wrap uiFontX1_5' style={{textAlign: 'left'}}>{cid?.sellerName}</div>
+            <div className='ion-text-wrap uiFontX1_5' style={{ textAlign: 'left' }}>{cid?.sellerName}</div>
 
             <div>
               <IonLabel className='ion-text-wrap uiFontX1_5' style={{ color: 'red' }}>{cid?.invNum}</IonLabel>
@@ -94,7 +94,7 @@ class _DetailPage extends React.Component<PageProps, State> {
 
             <IonItem>
               <IonLabel className='ion-text-wrap uiFontX0_7'>{cid?.invDate}&nbsp;{cid?.invoiceTime}</IonLabel>
-              <IonLabel className='ion-text-wrap uiFontX0_7' style={{textAlign: 'right'}}>{this.props.settings.cardNo}</IonLabel>
+              <IonLabel className='ion-text-wrap uiFontX0_7' style={{ textAlign: 'right' }}>{this.props.settings.cardNo}</IonLabel>
             </IonItem>
 
             {
@@ -109,14 +109,23 @@ class _DetailPage extends React.Component<PageProps, State> {
                 <IonItem>
                   <IonLabel className='ion-text-wrap uiFont'>門市地址：{cid?.sellerAddress}</IonLabel>
                 </IonItem>
+                <IonItem>
+                  <IonLabel slot='start' className='ion-text-wrap uiFont' style={{ fontWeight: 'bold' }}>品名(數量)</IonLabel>
+                  <IonLabel slot='end' className='ion-text-wrap uiFont' style={{ textAlign: 'right', fontWeight: 'bold' }}>小計</IonLabel>
+                </IonItem>
                 {
                   cid?.details.map((v, i) =>
                     <IonItem key={`item${i}`}>
                       <IonLabel slot='start' className='ion-text-wrap uiFont'>{v.description}({v.quantity})</IonLabel>
-                      <IonLabel slot='end' className='ion-text-wrap uiFont' style={{textAlign: 'right'}}>{v.amount}</IonLabel>
+                      <IonLabel slot='end' className='ion-text-wrap uiFont' style={{ textAlign: 'right' }}>{v.amount}</IonLabel>
                     </IonItem>
                   )
                 }
+                <IonItem>
+                  <IonLabel slot='end' className='ion-text-wrap uiFont' style={{ textAlign: 'right' }}>
+                    合計：{cid?.amount}元
+                  </IonLabel>
+                </IonItem>
               </IonList>
             }
 
