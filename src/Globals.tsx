@@ -1,6 +1,7 @@
 import { isPlatform, IonLabel } from '@ionic/react';
 
 const pwaUrl = process.env.PUBLIC_URL || '';
+const bugReportApiUrl = 'https://vh6ud1o56g.execute-api.ap-northeast-1.amazonaws.com/bugReportMailer';
 
 const tweiDb = 'tweiDb';
 let log = '';
@@ -144,6 +145,7 @@ function isMacCatalyst() {
 
 const Globals = {
   pwaUrl,
+  bugReportApiUrl,
   storeFile: 'tweiSettings.json',
   getLog,
   enableAppLog,
@@ -151,7 +153,7 @@ const Globals = {
   tweiDb,
   appSettings: {
     'theme': '佈景主題',
-    'uiFontSize': 'UI字型大小',
+    'uiFontSize': 'UI 字型大小',
   } as Record<string, string>,
   fetchErrorContent: (
     <div className='contentCenter'>

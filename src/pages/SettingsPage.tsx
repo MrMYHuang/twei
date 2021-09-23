@@ -2,6 +2,8 @@ import React from 'react';
 import { IonContent, IonHeader, IonPage, IonTitle, IonToolbar, IonList, IonItem, IonRange, IonIcon, IonLabel, IonToggle, IonButton, IonAlert, IonSelect, IonSelectOption, IonToast, withIonLifeCycle } from '@ionic/react';
 import { connect } from 'react-redux';
 import { RouteComponentProps } from 'react-router-dom';
+import axios from 'axios';
+
 import Globals from '../Globals';
 import { helpCircle, text, barcode, colorPalette, shareSocial, bug, download, informationCircle } from 'ionicons/icons';
 import './SettingsPage.css';
@@ -9,6 +11,7 @@ import PackageInfos from '../../package.json';
 import { Settings } from '../models/Settings';
 
 interface StateProps {
+  showBugReportAlert: boolean;
   showFontLicense: boolean;
   showClearAlert: boolean;
   showToast: boolean;
@@ -38,6 +41,7 @@ class _SettingsPage extends React.Component<PageProps, StateProps> {
     super(props);
 
     this.state = {
+      showBugReportAlert: false,
       showFontLicense: false,
       showClearAlert: false,
       showToast: false,
@@ -51,6 +55,7 @@ class _SettingsPage extends React.Component<PageProps, StateProps> {
   async updateData() {
   }
 
+  reportText = '';
   render() {
     return (
       <IonPage>
@@ -119,13 +124,63 @@ class _SettingsPage extends React.Component<PageProps, StateProps> {
                 });
               }} />
             </IonItem>
-            <IonItem hidden={!this.props.hasAppLog}>
+            <IonItem hidden={!this.props.settings.hasAppLog}>
               <div tabIndex={0}></div>{/* Workaround for macOS Safari 14 bug. */}
               <IonIcon icon={bug} slot='start' />
               <IonLabel className='ion-text-wrap uiFont'>回報 app 異常記錄</IonLabel>
               <IonButton fill='outline' shape='round' slot='end' size='large' className='uiFont' onClick={e => {
-                window.open(`mailto:myh@live.com?subject=台灣發票異常記錄回報&body=${encodeURIComponent("問題描述(建議填寫)：\n\n瀏覽器：" + navigator.userAgent + "\n\nApp版本：" + PackageInfos.pwaVersion + "\n\nApp設定：" + JSON.stringify(this.props.settings) + "\n\nLog：\n" + Globals.getLog())}`);
+                this.reportText = "瀏覽器：" + navigator.userAgent + "\n\nApp版本：" + PackageInfos.pwaVersion + "\n\nApp設定：" + JSON.stringify(this.props.settings) + "\n\nLog：\n" + Globals.getLog();
+                this.setState({ showBugReportAlert: true });
               }}>回報</IonButton>
+              <IonAlert
+                cssClass='uiFont'
+                backdropDismiss={false}
+                isOpen={this.state.showBugReportAlert}
+                header={'異常回報'}
+                subHeader='輸入您的 E-mail，以後續聯絡'
+                inputs={[
+                  {
+                    name: 'name0',
+                    type: 'email',
+                    placeholder: '例：abc@example.com'
+                  },
+                  {
+                    name: 'name1',
+                    type: 'textarea',
+                    placeholder: '請描述發生步驟'
+                  },
+                ]}
+                buttons={[
+                  {
+                    text: '送出',
+                    cssClass: 'primary uiFont',
+                    handler: async (value) => {
+                      if (!/^\w+([-+.']\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*$/.test(value.name0)) {
+                        this.setState({ showBugReportAlert: false, showToast: true, toastMessage: `錯誤，E-mail 不符格式！` });
+                        return
+                      }
+
+                      try {
+                        const axiosInstance = axios.create({timeout: 10000});
+                        await axiosInstance.post(Globals.bugReportApiUrl, {
+                          subject: `${PackageInfos.productName}異常記錄回報`,
+                          text: `E-mail: ${value.name0}\n\n發生步驟: ${value.name1}\n\n${this.reportText}`,
+                        });
+                        this.setState({ showBugReportAlert: false, showToast: true, toastMessage: `異常回報成功` });
+                      } catch (error) {
+                        console.error(error);
+                        this.setState({ showBugReportAlert: false, showToast: true, toastMessage: `異常回報失敗` });
+                      }
+                    },
+                  },
+                  {
+                    text: '取消',
+                    role: 'cancel',
+                    cssClass: 'secondary uiFont',
+                    handler: () => this.setState({ showBugReportAlert: false }),
+                  },
+                ]}
+              />
             </IonItem>
             <IonItem>
               <div tabIndex={0}></div>{/* Workaround for macOS Safari 14 bug. */}
