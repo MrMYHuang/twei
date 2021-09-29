@@ -16,6 +16,11 @@
   ],
   "scope": "/twei/",
   "start_url": "/twei/",
+  "url_handlers": [
+    {
+      "origin": "https://myhpwa.github.io/twei/"
+    }
+  ],
   "shortcuts": [
     {
       "name": "開獎號碼",
