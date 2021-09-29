@@ -18,7 +18,7 @@
   "start_url": "/twei/",
   "url_handlers": [
     {
-      "origin": "https://myhpwa.github.io/twei/"
+      "origin": "https://myhpwa.github.io"
     }
   ],
   "shortcuts": [
