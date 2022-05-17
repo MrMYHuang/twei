@@ -198,11 +198,6 @@ class _AppOrig extends React.Component<AppOrigProps, State> {
   restoreAppSettings() {
     localStorage.setItem(Globals.storeFile, this.originalAppSettingsStr!);
     this.props.dispatch({ type: 'LOAD_SETTINGS' });
-    while (document.body.classList.length > 0) {
-      document.body.classList.remove(document.body.classList.item(0)!);
-    }
-    document.body.classList.toggle(`theme${this.props.settings.theme}`, true);
-    Globals.updateCssVars(this.props.settings);
   }
 
   // Prevent device from sleeping.
@@ -250,7 +245,7 @@ class _AppOrig extends React.Component<AppOrigProps, State> {
       if (queryMatches !== null) {
         query = decodeURIComponent(queryMatches[1]);
       }
-      return <Redirect to={route + query} />;
+      return <Redirect to={`${Globals.pwaUrl}` + route + query} />;
     } else if (window.location.pathname === `${Globals.pwaUrl}/` || window.location.pathname === `${Globals.pwaUrl}`) {
       return <Redirect to={`${Globals.pwaUrl}/eInvoice`} />;
     }

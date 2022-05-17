@@ -330,7 +330,7 @@ class _EInvoiceListPage extends React.Component<PageProps, State> {
                   try {
                     this.setIsLoading(true);
                     await Apis.carrierInvChk(this.props.settings.cardNo, this.props.settings.cardEncrypt, this.state.dateSel, true);
-                  } catch (error) {
+                  } catch (error: any) {
                     this.setIsLoading(false);
                     if (error.message === 'LOGIN SUCCESS') {
                       this.setState({ toastMessage: '登入成功！', showToast: true });
