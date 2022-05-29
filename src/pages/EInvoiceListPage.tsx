@@ -1,7 +1,8 @@
-import React from 'react';
-import { IonContent, IonHeader, IonPage, IonToolbar, withIonLifeCycle, IonButton, IonList, IonItem, IonLabel, IonLoading, IonToast, IonTitle, IonInfiniteScroll, IonInfiniteScrollContent, IonAlert, IonInput, IonDatetime } from '@ionic/react';
+import React, { ReactNode } from 'react';
+import { IonContent, IonHeader, IonPage, IonToolbar, withIonLifeCycle, IonButton, IonList, IonItem, IonLabel, IonLoading, IonToast, IonTitle, IonInfiniteScroll, IonInfiniteScrollContent, IonAlert, IonInput, IonDatetime, IonText, IonPopover } from '@ionic/react';
 import { RouteComponentProps } from 'react-router-dom';
 import { connect } from 'react-redux';
+import { format, parseISO } from 'date-fns';
 import { Settings } from '../models/Settings';
 import { TmpSettings } from '../models/TmpSettings';
 import './EInvoiceListPage.css';
@@ -38,7 +39,7 @@ class _EInvoiceListPage extends React.Component<PageProps, State> {
     super(props);
     this.state = {
       dataParts: [],
-      dateSel: new Date().toString(),
+      dateSel: new Date().toISOString(),
       popover: {
         show: false,
         event: null,
@@ -77,8 +78,10 @@ class _EInvoiceListPage extends React.Component<PageProps, State> {
   async fetchDataAndShow() {
     this.setIsLoading(true);
     await this.fetchData();
-    await this.showDataPageByPage(true);
-    this.setIsLoading(false);
+    setTimeout(async () => {
+      await this.showDataPageByPage(true);
+      this.setIsLoading(false);
+    }, 0);
   }
 
   async fetchData() {
@@ -191,7 +194,7 @@ class _EInvoiceListPage extends React.Component<PageProps, State> {
   }
 
   getRows() {
-    let rows = Array<object>();
+    let rows = Array<ReactNode>();
     this.state.dataParts.forEach((item: CarrierInvChkDetailExt, index: number) => {
       const row = <IonItem button={true} key={`item` + item.invNum}
         onClick={async event => {
@@ -230,17 +233,26 @@ class _EInvoiceListPage extends React.Component<PageProps, State> {
         <IonHeader>
           <IonToolbar>
             <IonTitle className='uiFont'>發票</IonTitle>
-            <IonDatetime slot='end' className='uiFont'
-              displayFormat='YYYY年MM月'
-              display-timezone='Asia/Taipei'
-              doneText='確定'
-              cancelText='取消'
-              value={this.state.dateSel}
-              onIonChange={async e => {
-                this.setState({ dateSel: e.detail.value || '' });
-                await this.fetchDataAndShow();
-              }} >
-            </IonDatetime>
+            <IonButton id="open-date-input" slot='end'>
+              <IonText className='uiFont'>{format(parseISO(this.state.dateSel), 'yyyy年MM月')}</IonText>
+              <IonPopover trigger="open-date-input" showBackdrop={false}>
+                <IonDatetime
+                  value={this.state.dateSel}
+                  locale='zh'
+                  presentation="month-year"
+                  display-timezone='Asia/Taipei'
+                  showDefaultButtons={true}
+                  doneText='確定'
+                  cancelText='取消'
+                  onIonChange={async ev => {
+                    //setPopoverDate(formatDate(ev.detail.value!));
+                    this.setState({ dateSel: ev.detail.value || '' }, () => {
+                      this.fetchDataAndShow();
+                    });
+                  }}
+                />
+              </IonPopover>
+            </IonButton>
           </IonToolbar>
         </IonHeader>
         <IonContent style={{ textAlign: 'center' }}>
@@ -329,7 +341,7 @@ class _EInvoiceListPage extends React.Component<PageProps, State> {
 
                   try {
                     this.setIsLoading(true);
-                    await Apis.carrierInvChk(this.props.settings.cardNo, this.props.settings.cardEncrypt, this.state.dateSel, true);
+                    await Apis.carrierInvChk(this.state.cardNo, this.state.cardEncrypt, this.state.dateSel, true);
                   } catch (error: any) {
                     this.setIsLoading(false);
                     if (error.message === 'LOGIN SUCCESS') {

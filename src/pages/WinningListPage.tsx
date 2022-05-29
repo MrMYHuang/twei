@@ -1,7 +1,8 @@
 import React from 'react';
-import { IonContent, IonHeader, IonPage, IonTitle, IonToolbar, withIonLifeCycle, IonButton, IonIcon, IonToast, IonLoading, IonLabel, IonDatetime } from '@ionic/react';
+import { IonContent, IonHeader, IonPage, IonTitle, IonToolbar, withIonLifeCycle, IonButton, IonIcon, IonToast, IonLoading, IonLabel, IonDatetime, IonPopover, IonText, IonButtons } from '@ionic/react';
 import { RouteComponentProps } from 'react-router-dom';
 import { connect } from 'react-redux';
+import { format, parseISO } from 'date-fns';
 
 import { Settings } from '../models/Settings';
 import { TmpSettings } from '../models/TmpSettings';
@@ -27,10 +28,12 @@ interface PageProps extends Props, RouteComponentProps<{
 }> { }
 
 class _WinningListPage extends React.Component<PageProps, State> {
+  ionDateTime: React.RefObject<HTMLIonDatetimeElement>;
   maxDate: Date;
   constructor(props: PageProps) {
     super(props);
 
+    this.ionDateTime = React.createRef<HTMLIonDatetimeElement>();
     const currentDate = new Date();
     const year = currentDate.getFullYear();
     const month = currentDate.getMonth() + 1;
@@ -40,7 +43,7 @@ class _WinningListPage extends React.Component<PageProps, State> {
       1);
 
     this.state = {
-      dateSel: this.maxDate.toString(),
+      dateSel: this.maxDate.toISOString(),
       showToast: false,
       toastMessage: '',
     };
@@ -93,19 +96,34 @@ class _WinningListPage extends React.Component<PageProps, State> {
 
             <IonTitle className='uiFont'>開獎號碼</IonTitle>
 
-            <IonDatetime slot='end' className='uiFont'
-              displayFormat='YYYY年MMM月'
-              monthValues='1, 3, 5, 7, 9, 11'
-              monthShortNames='01-02, 01-02, 03-04, 03-04, 05-06, 05-06, 07-08, 07-08, 09-10, 09-10, 11-12, 11-12'
-              display-timezone='Asia/Taipei'
-              doneText='確定'
-              cancelText='取消'
-              value={this.state.dateSel}
-              onIonChange={async e => {
-                this.setState({ dateSel: e.detail.value || '' });
-                await this.fetchData();
-              }}>
-            </IonDatetime>
+            <IonButton id="win-open-date-input" slot='end'>
+              <IonText className='uiFont'>{format(parseISO(this.state.dateSel), 'yyyy年MM月')}</IonText>
+              <IonPopover trigger="win-open-date-input" showBackdrop={false}>
+                <IonDatetime
+                  ref={this.ionDateTime}
+                  value={this.state.dateSel}
+                  locale='zh'
+                  presentation="month-year"
+                  monthValues='1, 3, 5, 7, 9, 11'
+                  display-timezone='Asia/Taipei'
+                  onIonChange={async ev => {
+                    //setPopoverDate(formatDate(ev.detail.value!));
+                    this.setState({ dateSel: ev.detail.value || '' }, () => {
+                      this.fetchData();
+                    });
+                  }}
+                >
+                  <IonButtons slot="buttons">
+                    <IonButton className='uiFont' onClick={() => {
+                      this.ionDateTime.current?.confirm(true);
+                    }}>確定</IonButton>
+                    <IonButton className='uiFont' onClick={() => {
+                      this.ionDateTime.current?.cancel(true);
+                    }}>取消</IonButton>
+                  </IonButtons>
+                </IonDatetime>
+              </IonPopover>
+            </IonButton>
           </IonToolbar>
         </IonHeader>
         <IonContent style={{ textAlign: 'center' }}>
